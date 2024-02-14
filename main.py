@@ -1,7 +1,13 @@
+import asyncio
+import os
+import random
+import signal
 import discord
 from discord.ext import commands
 import sys
 import subprocess
+
+import requests
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -44,9 +50,36 @@ async def say(ctx, *, message):
     await ctx.send(embed=embed)
 
 
+
 @bot.command()
 async def restart(ctx):
-        await ctx.send('Бот перезапускается...')
-        cmd = [sys.executable] + sys.argv
-        subprocess.Popen(cmd)
-        await bot.close()
+    await ctx.send('Бот перезапускается...')
+    pid = os.getpid()
+    python_executable = sys.executable
+    cmd = [python_executable] + sys.argv
+
+    # Ваш код для перезапуска бота
+    subprocess.Popen(cmd)
+    await bot.close()
+
+def get_duck_image_url():    
+    url = 'https://random-d.uk/api/random'
+    res = requests.get(url)
+    data = res.json()
+    return data['url']
+
+
+@bot.command('duck')
+async def duck(ctx):
+    '''По команде duck вызывает функцию get_duck_image_url'''
+    image_url = get_duck_image_url()
+    await ctx.send(image_url)
+
+
+@bot.command()
+async def mem(ctx):
+    image_files = ['images/mem1.jpg', 'images/mem2.jpg', 'images/mem3.jpg']
+    random_image = random.choice(image_files)
+    with open(random_image, 'rb') as f:
+        picture = discord.File(f)
+    await ctx.send(file=picture)
